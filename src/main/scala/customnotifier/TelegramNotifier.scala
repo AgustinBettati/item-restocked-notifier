@@ -6,8 +6,9 @@ import utils.AppConfig
 import java.io.{BufferedInputStream, IOException}
 import java.net.URL
 
-case class TelegramNotifier(apiToken: String) extends Notifier {
+object TelegramNotifier extends Notifier {
 
+  private lazy val apiToken = AppConfig.telegramApiToken
 
   override def notify(result: LookupResult, product: ProductLookup): Unit = {
     var urlString = "https://api.telegram.org/bot%s/sendMessage?chat_id=%s&text=%s"

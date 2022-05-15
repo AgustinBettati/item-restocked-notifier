@@ -11,13 +11,10 @@ import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.duration.DurationInt
 
 object Main {
-  def main(args: Array[String]): Unit = {
-    val telegramApiToken: String = args(0)
-    schedulePeriodicExecution(telegramApiToken)
-  }
+  def main(args: Array[String]): Unit = schedulePeriodicExecution()
 
-  def schedulePeriodicExecution(telegramApiToken: String): Unit = {
-    val system: ActorSystem[ProductsLookupCommand] = ActorSystem(ExecutionActor(telegramApiToken), "product-lookup-actor")
+  def schedulePeriodicExecution(): Unit = {
+    val system: ActorSystem[ProductsLookupCommand] = ActorSystem(ExecutionActor(), "product-lookup-actor")
     implicit val ec: ExecutionContextExecutor = system.executionContext
 
     val nakaProducts: List[ProductLookup] = NakaOutdoors.interestedProducts
@@ -32,11 +29,11 @@ object ExecutionActor {
 
   case class ProductsLookupCommand(products: List[ProductLookup])
 
-  def apply(telegramApiToken: String): Behavior[ProductsLookupCommand] = {
+  def apply(): Behavior[ProductsLookupCommand] = {
     Behaviors.supervise[ProductsLookupCommand](
       Behaviors.receiveMessage {
         c: ProductsLookupCommand =>
-          ProductLookupRunner(c.products, TelegramNotifier(telegramApiToken)).run()
+          ProductLookupRunner(c.products, TelegramNotifier).run()
           Behaviors.same
       }
     ).onFailure(SupervisorStrategy.restart.withLogLevel(Level.ERROR)) // make sure application does not terminate on error.

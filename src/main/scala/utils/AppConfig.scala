@@ -12,5 +12,6 @@ object AppConfig {
 
   val lookupInterval: FiniteDuration = config.getDuration("lookup-interval").toScala
   val telegramChannel: String = config.getString("telegram.channel-name")
+  val telegramApiToken: String = config.getString("telegram.api-token")
 
 }
