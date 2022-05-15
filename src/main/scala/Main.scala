@@ -1,7 +1,7 @@
 import ExecutionActor.ProductsLookupCommand
 import akka.actor.typed.{ActorSystem, Behavior, SupervisorStrategy}
 import akka.actor.typed.scaladsl.Behaviors
-import customnotifier.TelegramNotifier
+import customnotifier.{MultipleNotifiers, SuccessEmailNotifier, TelegramNotifier}
 import customsearch.NakaOutdoors
 import lookup.{ProductLookup, ProductLookupRunner}
 import org.slf4j.event.Level
@@ -33,7 +33,8 @@ object ExecutionActor {
     Behaviors.supervise[ProductsLookupCommand](
       Behaviors.receiveMessage {
         c: ProductsLookupCommand =>
-          ProductLookupRunner(c.products, TelegramNotifier).run()
+          val notifiers = List(TelegramNotifier, SuccessEmailNotifier)
+          ProductLookupRunner(c.products, MultipleNotifiers(notifiers)).run()
           Behaviors.same
       }
     ).onFailure(SupervisorStrategy.restart.withLogLevel(Level.ERROR)) // make sure application does not terminate on error.
